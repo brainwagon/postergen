@@ -43,6 +43,7 @@ Global directives start with an `!` and affect the entire poster.
 *   `!size <width>x<height>`: Sets the size of the output image. The default is `1024x1536`.
 *   `!margin <value>`: Sets the margin for the poster. The value can be a percentage (e.g., `5%`) or in pixels. The default is `5%`.
 *   `!background_color <color>`: Sets the background color of the poster. You can use color names (e.g., `white`, `black`) or hex codes (e.g., `#DDDDDD`). The default is `white`.
+*   `!background_image <path_to_image>`: Sets an image to be used as the background for the entire poster. The image is resized to the full dimensions of the poster, ignoring the original aspect ratio. This background is drawn first, and all other content, including the margin, will be placed on top of it.
 
 **Example:**
 

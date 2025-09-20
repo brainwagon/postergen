@@ -9,9 +9,10 @@ class Poster:
         self.margin = 0.05
         self.font = 'Arial'
         self.background_color = 'white'
+        self.background_image = None
 
     def __repr__(self):
-        return f"Poster(width={self.width}, height={self.height}, margin={self.margin}, font='{self.font}', background_color='{self.background_color}', elements={self.elements})"
+        return f"Poster(width={self.width}, height={self.height}, margin={self.margin}, font='{self.font}', background_color='{self.background_color}', background_image='{self.background_image}', elements={self.elements})"
 
 class TextLine:
     def __init__(self, text, justification='center', size_modifier=0, size=None, color='black'):
@@ -61,6 +62,8 @@ def parse_directives(lines, poster):
                     poster.margin = int(margin_str)
             elif command == 'background_color':
                 poster.background_color = parts[1]
+            elif command == 'background_image':
+                poster.background_image = parts[1]
         else:
             remaining_lines.append(line)
     return remaining_lines
@@ -114,7 +117,12 @@ def parse_line(line):
 
 
 def render_poster(poster, output_filename):
-    image = Image.new('RGB', (poster.width, poster.height), poster.background_color)
+    if poster.background_image:
+        image = Image.open(poster.background_image)
+        image = image.resize((poster.width, poster.height))
+        image = image.convert('RGB')
+    else:
+        image = Image.new('RGB', (poster.width, poster.height), poster.background_color)
     draw = ImageDraw.Draw(image)
     
     margin_x = int(poster.width * poster.margin)
