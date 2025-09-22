@@ -39,7 +39,7 @@ Lines beginning with a `#` are considered comments and are ignored.
 
 Global directives start with an `!` and affect the entire poster.
 
-*   `!font <font_name>`: Sets the font for all subsequent text. This command can be used multiple times in the input file to change fonts for different parts of the poster. You can use the name of a font (e.g., `Arial`) or the path to a `.ttf` file (e.g., `TNG_Credits.ttf`). The default font is Arial.
+*   `!font <font_name>`: Sets the font for all subsequent text. This command can be used multiple times in the input file to change fonts for different parts of the poster. You can use the name of a font (e.g., `Arial`) or the path to a `.ttf` or `.ttc` file (e.g., `TNG_Credits.ttf`). For `.ttc` files, you can specify a font index by appending `:<index>` to the filename (e.g., `myfont.ttc:1`). If no index is provided, the first font in the collection (index 0) will be used. The default font is Arial.
 *   `!size <width>x<height>`: Sets the size of the output image. The default is `1024x1536`.
 *   `!margin <value>`: Sets the margin for the poster. The value can be a percentage (e.g., `5%`) or in pixels. The default is `5%`.
 *   `!background_color <color>`: Sets the background color of the poster. You can use color names (e.g., `white`, `black`) or hex codes (e.g., `#DDDDDD`). The default is `white`.

@@ -1,8 +1,7 @@
 # This is a comment and should be ignored.
 !size 800x1200
-!font Arial
 
-!font TNG_Credits.ttf
+!font ukai.ttc:0
 size=bigger size=bigger A Big Title
 
 !font Arial

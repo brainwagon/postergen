@@ -1,5 +1,30 @@
 import argparse
+import os
+import glob
+import subprocess
 from PIL import Image, ImageDraw, ImageFont
+
+def list_fonts():
+    font_paths = ['./']
+    if os.name == 'posix':
+        font_paths.extend([
+            '/usr/share/fonts/',
+            '/usr/local/share/fonts/',
+            os.path.expanduser('~/.fonts'),
+        ])
+
+    fonts = []
+    for path in font_paths:
+        for font_file in glob.glob(os.path.join(path, '**/*.ttf'), recursive=True):
+            fonts.append(os.path.basename(font_file))
+        for font_file in glob.glob(os.path.join(path, '**/*.otf'), recursive=True):
+            fonts.append(os.path.basename(font_file))
+        for font_file in glob.glob(os.path.join(path, '**/*.ttc'), recursive=True):
+            fonts.append(os.path.basename(font_file))
+
+    for font in sorted(list(set(fonts))):
+        print(font)
+
 
 class Poster:
     def __init__(self):
@@ -42,7 +67,6 @@ class BlankLine:
 
     def __repr__(self):
         return f"BlankLine(height={self.height})"
-
 
 
 
@@ -170,11 +194,17 @@ def render_poster(poster, output_filename):
                 if font_size <= 0:
                     font_size = 1
                 font_name = element.font
-                if not font_name.endswith('.ttf'):
+                font_index = 0
+                if ':' in font_name:
+                    font_name, font_index = font_name.split(':')
+                    font_index = int(font_index)
+
+                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
                     font_name += '.ttf'
-                font = ImageFont.truetype(font_name, size=font_size)
-            except IOError:
-                raise IOError(f"Error: Font file not found at {font_name}. Please ensure the font exists and the path is correct.")
+                font = ImageFont.truetype(font_name, size=font_size, index=font_index)
+            except OSError:
+                print(f"Warning: Font file not found at {element.font}. Using default font.")
+                font = ImageFont.load_default()
 
             text_width, _ = draw.textbbox((0,0), element.text, font=font)[2:]
 
@@ -193,10 +223,16 @@ def render_poster(poster, output_filename):
             font_size = group_font_sizes[(element.size_modifier, element.font)]
             try:
                 font_name = element.font
-                if not font_name.endswith('.ttf'):
+                font_index = 0
+                if ':' in font_name:
+                    font_name, font_index = font_name.split(':')
+                    font_index = int(font_index)
+
+                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
                     font_name += '.ttf'
-                font = ImageFont.truetype(font_name, size=font_size)
-            except IOError:
+                font = ImageFont.truetype(font_name, size=font_size, index=font_index)
+            except OSError:
+                print(f"Warning: Font file not found at {element.font}. Using default font.")
                 font = ImageFont.load_default()
             _, text_height = draw.textbbox((0,0), element.text, font=font)[2:]
             rendered_heights.append(text_height)
@@ -214,11 +250,17 @@ def render_poster(poster, output_filename):
             font_size = group_font_sizes[(element.size_modifier, element.font)]
             try:
                 font_name = element.font
-                if not font_name.endswith('.ttf'):
+                font_index = 0
+                if ':' in font_name:
+                    font_name, font_index = font_name.split(':')
+                    font_index = int(font_index)
+
+                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
                     font_name += '.ttf'
-                font = ImageFont.truetype(font_name, size=font_size)
-            except IOError:
-                raise IOError(f"Error: Font file not found at {font_name}. Please ensure the font exists and the path is correct.")
+                font = ImageFont.truetype(font_name, size=font_size, index=font_index)
+            except OSError:
+                print(f"Warning: Font file not found at {element.font}. Using default font.")
+                font = ImageFont.load_default()
 
             text_width, text_height = draw.textbbox((0,0), element.text, font=font)[2:]
             
@@ -259,11 +301,20 @@ def render_poster(poster, output_filename):
 
 def main():
     parser = argparse.ArgumentParser(description='Create posters from a text file.')
-    parser.add_argument('input_file', help='The input file for the poster.')
+    parser.add_argument('input_file', nargs='?', help='The input file for the poster.')
     parser.add_argument('-o', '--output', help='The output file name.', default='output.png')
     parser.add_argument('--size', help='The size of the output image in the format <width>x<height>.')
+    parser.add_argument('--list-fonts', action='store_true', help='List all available fonts and exit.')
+    parser.add_argument('--preview', action='store_true', help='Preview the generated image.')
     parser.add_argument('--margin', help='The margin for the poster as a percentage or in pixels.')
     args = parser.parse_args()
+
+    if args.list_fonts:
+        list_fonts()
+        return
+
+    if not args.input_file:
+        parser.error('the following arguments are required: input_file')
 
     poster = Poster()
 
@@ -296,6 +347,14 @@ def main():
             poster.elements.append(element)
 
     render_poster(poster, args.output)
+
+    if args.preview:
+        if os.name == 'posix':
+            subprocess.run(['xdg-open', args.output])
+        elif os.name == 'mac':
+            subprocess.run(['open', args.output])
+        elif os.name == 'nt':
+            os.startfile(args.output)
 
 
 if __name__ == '__main__':
