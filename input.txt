@@ -1,7 +1,7 @@
 # This is a comment and should be ignored.
 !size 800x1200
 
-!font Reason Shadow BRK
+!font Impact Regular
 size=bigger size=bigger A Big Title
 
 !font Arial
@@ -14,3 +14,6 @@ alignment=right Line 3 is longer, but still short
 /home/markv/postergen/picard.png height=15%
 
 A concluding paragraph.
+
+!font Verdana Italic
+alignment=right size=smaller size=smaller size=smaller size=smaller size=smaller - Mark VandeWettering

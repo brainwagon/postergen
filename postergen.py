@@ -18,13 +18,13 @@ def get_font_map():
         for font_file in glob.glob(os.path.join(path, '**/*.ttf'), recursive=True):
             try:
                 font = ImageFont.truetype(font_file)
-                font_map[font.getname()[0]] = font_file
+                font_map[f'{font.getname()[0]} {font.getname()[1]}'] = font_file
             except OSError:
                 pass
         for font_file in glob.glob(os.path.join(path, '**/*.otf'), recursive=True):
             try:
                 font = ImageFont.truetype(font_file)
-                font_map[font.getname()[0]] = font_file
+                font_map[f'{font.getname()[0]} {font.getname()[1]}'] = font_file
             except OSError:
                 pass
         for font_file in glob.glob(os.path.join(path, '**/*.ttc'), recursive=True):
@@ -34,17 +34,96 @@ def get_font_map():
                 for i in range(100): # Try up to 100 fonts in a collection
                     try:
                         font = ImageFont.truetype(font_file, index=i)
-                        font_map[font.getname()[0]] = f"{font_file}:{i}"
+                        font_map[f'{font.getname()[0]} {font.getname()[1]}'] = f"{font_file}:{i}"
                     except OSError:
                         break
             except OSError:
                 pass
     return font_map
 
-def list_fonts():
+def list_fonts(common_only=False):
     font_map = get_font_map()
+    common_fonts = [
+        'Arial Regular',
+        'Arial Bold',
+        'Arial Italic',
+        'Arial Bold Italic',
+        'Arial Black Regular',
+        'Comic Sans MS Regular',
+        'Comic Sans MS Bold',
+        'Courier New Regular',
+        'Courier New Bold',
+        'Courier New Italic',
+        'Courier New Bold Italic',
+        'Georgia Regular',
+        'Georgia Bold',
+        'Georgia Italic',
+        'Georgia Bold Italic',
+        'Impact Regular',
+        'Times New Roman Regular',
+        'Times New Roman Bold',
+        'Times New Roman Italic',
+        'Times New Roman Bold Italic',
+        'Trebuchet MS Regular',
+        'Trebuchet MS Bold',
+        'Trebuchet MS Italic',
+        'Trebuchet MS Bold Italic',
+        'Verdana Regular',
+        'Verdana Bold',
+        'Verdana Italic',
+        'Verdana Bold Italic',
+        'Helvetica Regular',
+        'Helvetica Bold',
+        'Helvetica Italic',
+        'Helvetica Bold Italic',
+        'Times Regular',
+        'Times Bold',
+        'Times Italic',
+        'Times Bold Italic',
+        'Garamond Regular',
+        'Garamond Bold',
+        'Garamond Italic',
+        'Garamond Bold Italic',
+        'Futura Regular',
+        'Futura Bold',
+        'Futura Italic',
+        'Futura Bold Italic',
+        'Bodoni Regular',
+        'Bodoni Bold',
+        'Bodoni Italic',
+        'Bodoni Bold Italic',
+        'Rockwell Regular',
+        'Rockwell Bold',
+        'Rockwell Italic',
+        'Rockwell Bold Italic',
+        'Franklin Gothic Regular',
+        'Franklin Gothic Bold',
+        'Franklin Gothic Italic',
+        'Franklin Gothic Bold Italic',
+        'Myriad Regular',
+        'Myriad Bold',
+        'Myriad Italic',
+        'Myriad Bold Italic',
+        'Minion Regular',
+        'Minion Bold',
+        'Minion Italic',
+        'Minion Bold Italic',
+        'Lucida Grande Regular',
+        'Lucida Grande Bold',
+        'Lucida Grande Italic',
+        'Lucida Grande Bold Italic',
+        'Gill Sans Regular',
+        'Gill Sans Bold',
+        'Gill Sans Italic',
+        'Gill Sans Bold Italic',
+    ]
+
     for name, path in sorted(font_map.items()):
-        print(f'{name} ({os.path.basename(path)})')
+        if common_only:
+            if name in common_fonts:
+                print(f'{name} ({os.path.basename(path)})')
+        else:
+            print(f'{name} ({os.path.basename(path)})')
 
 
 class Poster:
@@ -316,10 +395,15 @@ def main():
     parser.add_argument('input_file', nargs='?', help='The input file for the poster.')
     parser.add_argument('-o', '--output', help='The output file name.', default='output.png')
     parser.add_argument('--size', help='The size of the output image in the format <width>x<height>.')
+    parser.add_argument('--list-common-fonts', action='store_true', help='List common fonts and exit.')
     parser.add_argument('--list-fonts', action='store_true', help='List all available fonts and exit.')
     parser.add_argument('--preview', action='store_true', help='Preview the generated image.')
     parser.add_argument('--margin', help='The margin for the poster as a percentage or in pixels.')
     args = parser.parse_args()
+
+    if args.list_common_fonts:
+        list_fonts(common_only=True)
+        return
 
     if args.list_fonts:
         list_fonts()
