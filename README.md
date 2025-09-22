@@ -17,7 +17,8 @@ The script will generate an image file (by default, `output.png`) based on the i
 *   `-o <filename>` or `--output <filename>`: Specifies the output file name. The default is `output.png`.
 *   `--size <width>x<height>`: Overrides the size of the output image.
 *   `--margin <value>`: Overrides the margin for the poster. The value can be a percentage (e.g., `5%`) or in pixels.
-*   `--list-fonts`: Lists all available fonts and exits.
+*   `--list-fonts`: Lists all available fonts (including all variants) and exits.
+*   `--list-common-fonts`: Lists common fonts (including all variants) and exits.
 *   `--preview`: Previews the generated image.
 
 ## Input File Syntax
@@ -37,7 +38,7 @@ Lines beginning with a `#` are considered comments and are ignored.
 
 Global directives start with an `!` and affect the entire poster.
 
-*   `!font <font_name>`: Sets the font for all subsequent text. This command can be used multiple times in the input file to change fonts for different parts of the poster. You can use the human-readable name of a font (e.g., `Arial Black`), or the path to a `.ttf` or `.ttc` file (e.g., `TNG_Credits.ttf`). For `.ttc` files, you can specify a font index by appending `:<index>` to the filename (e.g., `myfont.ttc:1`). If no index is provided, the first font in the collection (index 0) will be used. The default font is Arial. Use the `--list-fonts` command to see a list of available fonts.
+*   `!font <font_name>`: Sets the font for all subsequent text. This command can be used multiple times in the input file to change fonts for different parts of the poster. You can use the human-readable name of a font (e.g., `Arial Black Regular`, `Arial Bold`), or the path to a `.ttf` or `.ttc` file (e.g., `TNG_Credits.ttf`). For `.ttc` files, you can specify a font index by appending `:<index>` to the filename (e.g., `myfont.ttc:1`). If no index is provided, the first font in the collection (index 0) will be used. The default font is Arial. Use the `--list-fonts` or `--list-common-fonts` commands to see a list of available fonts.
 *   `!size <width>x<height>`: Sets the size of the output image. The default is `1024x1536`.
 *   `!margin <value>`: Sets the margin for the poster. The value can be a percentage (e.g., `5%`) or in pixels. The default is `5%`.
 *   `!background_color <color>`: Sets the background color of the poster. You can use color names (e.g., `white`, `black`) or hex codes (e.g., `#DDDDDD`). The default is `white`.
