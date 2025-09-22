@@ -39,7 +39,7 @@ Lines beginning with a `#` are considered comments and are ignored.
 
 Global directives start with an `!` and affect the entire poster.
 
-*   `!font <font_name>`: Sets the font for all subsequent text. You can use the name of a font (e.g., `Arial`) or the path to a `.ttf` file (e.g., `TNG_Credits.ttf`). The default font is Arial.
+*   `!font <font_name>`: Sets the font for all subsequent text. This command can be used multiple times in the input file to change fonts for different parts of the poster. You can use the name of a font (e.g., `Arial`) or the path to a `.ttf` file (e.g., `TNG_Credits.ttf`). The default font is Arial.
 *   `!size <width>x<height>`: Sets the size of the output image. The default is `1024x1536`.
 *   `!margin <value>`: Sets the margin for the poster. The value can be a percentage (e.g., `5%`) or in pixels. The default is `5%`.
 *   `!background_color <color>`: Sets the background color of the poster. You can use color names (e.g., `white`, `black`) or hex codes (e.g., `#DDDDDD`). The default is `white`.
@@ -58,10 +58,10 @@ Global directives start with an `!` and affect the entire poster.
 
 To render text, simply add it to a new line in the input file. You can control the alignment, size, and color of the text using special keywords.
 
-*   **Alignment:** `left`, `center`, `right`. The default is `center`.
+*   **Alignment:** `alignment=<value>`, where `<value>` can be `left`, `center`, or `right`. The default is `center`.
 *   **Size:**
-    *   `bigger`: Makes the text larger than the default size. Can be used multiple times (e.g., `bigger bigger`).
-    *   `smaller`: Makes the text smaller than the default size. Can be used multiple times.
+    *   `size=bigger`: Makes the text larger than the default size. Can be used multiple times (e.g., `size=bigger size=bigger`).
+    *   `size=smaller`: Makes the text smaller than the default size. Can be used multiple times.
     *   `size=<value>`: Sets the font size in pixels (e.g., `size=48`) or as a percentage of the image height (e.g., `size=10%`).
 *   **Color:** `color=<color>`: Sets the color of the text. You can use color names (e.g., `red`, `blue`) or hex codes (e.g., `#FF0000`). The default is `black`.
 
@@ -71,8 +71,8 @@ Keywords can be combined.
 
 ```
 This is centered text.
-left This is left-justified text.
-right bigger This is right-justified, larger text.
+alignment=left This is left-justified text.
+alignment=right size=bigger This is right-justified, larger text.
 size=60 color=blue This text has a specific pixel size and is blue.
 size=5% color=#00FF00 This text has a specific percentage size and is green.
 ```

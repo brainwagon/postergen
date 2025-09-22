@@ -15,16 +15,17 @@ class Poster:
         return f"Poster(width={self.width}, height={self.height}, margin={self.margin}, font='{self.font}', background_color='{self.background_color}', background_image='{self.background_image}', elements={self.elements})"
 
 class TextLine:
-    def __init__(self, text, justification='center', size_modifier=0, size=None, color='black'):
+    def __init__(self, text, justification='center', size_modifier=0, size=None, color='black', font=None):
         self.text = text
         self.justification = justification
         self.size_modifier = size_modifier
         self.size = size
         self.height = 0
         self.color = color
+        self.font = font
 
     def __repr__(self):
-        return f"TextLine(text='{self.text}', justification='{self.justification}', size_modifier={self.size_modifier}, size={self.size}, height={self.height}, color='{self.color}')"
+        return f"TextLine(text='{self.text}', justification='{self.justification}', size_modifier={self.size_modifier}, size={self.size}, height={self.height}, color='{self.color}', font='{self.font}')"
 
 class ImageElement:
     def __init__(self, path, width=None, height=None):
@@ -43,32 +44,9 @@ class BlankLine:
         return f"BlankLine(height={self.height})"
 
 
-def parse_directives(lines, poster):
-    remaining_lines = []
-    for line in lines:
-        line = line.strip()
-        if line.startswith('!'):
-            parts = line[1:].split()
-            command = parts[0]
-            if command == 'font':
-                poster.font = parts[1]
-            elif command == 'size':
-                poster.width, poster.height = map(int, parts[1].split('x'))
-            elif command == 'margin':
-                margin_str = parts[1]
-                if margin_str.endswith('%'):
-                    poster.margin = float(margin_str[:-1]) / 100
-                else:
-                    poster.margin = int(margin_str)
-            elif command == 'background_color':
-                poster.background_color = parts[1]
-            elif command == 'background_image':
-                poster.background_image = parts[1]
-        else:
-            remaining_lines.append(line)
-    return remaining_lines
 
-def parse_line(line):
+
+def parse_line(line, poster):
     line = line.strip()
     if not line:
         return BlankLine()
@@ -87,18 +65,16 @@ def parse_line(line):
     is_image = any('.jpg' in p or '.png' in p for p in parts)
 
     for part in parts:
-        if part == 'left':
-            justification = 'left'
-        elif part == 'right':
-            justification = 'right'
-        elif part == 'center':
-            justification = 'center'
-        elif part == 'bigger':
-            size_modifier += 1
-        elif part == 'smaller':
-            size_modifier -= 1
+        if part.startswith('alignment='):
+            justification = part.split('=')[1]
         elif part.startswith('size='):
-            size = part.split('=')[1]
+            size_value = part.split('=')[1]
+            if size_value == 'bigger':
+                size_modifier += 1
+            elif size_value == 'smaller':
+                size_modifier -= 1
+            else:
+                size = size_value
         elif part.startswith('width='):
             width = part.split('=')[1]
         elif part.startswith('height='):
@@ -113,7 +89,7 @@ def parse_line(line):
             height = size
         return ImageElement(" ".join(text_parts), width=width, height=height)
     else:
-        return TextLine(" ".join(text_parts), justification=justification, size_modifier=size_modifier, size=size, color=color)
+        return TextLine(" ".join(text_parts), justification=justification, size_modifier=size_modifier, size=size, color=color, font=poster.font)
 
 
 def render_poster(poster, output_filename):
@@ -175,24 +151,25 @@ def render_poster(poster, output_filename):
                 else:
                     element.height = unit_height
 
-    # Group text lines by size_modifier
+    # Group text lines by size_modifier and font
     text_groups = {}
     for element in poster.elements:
         if isinstance(element, TextLine):
-            if element.size_modifier not in text_groups:
-                text_groups[element.size_modifier] = []
-            text_groups[element.size_modifier].append(element)
+            key = (element.size_modifier, element.font)
+            if key not in text_groups:
+                text_groups[key] = []
+            text_groups[key].append(element)
 
     # Calculate font size for each group
     group_font_sizes = {}
-    for size_modifier, group in text_groups.items():
+    for key, group in text_groups.items():
         min_font_size = 1000
         for element in group:
             try:
                 font_size = int(element.height * 0.8)
                 if font_size <= 0:
                     font_size = 1
-                font_name = poster.font
+                font_name = element.font
                 if not font_name.endswith('.ttf'):
                     font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size)
@@ -207,15 +184,15 @@ def render_poster(poster, output_filename):
             
             if font_size < min_font_size:
                 min_font_size = font_size
-        group_font_sizes[size_modifier] = min_font_size
+        group_font_sizes[key] = min_font_size
 
     # Calculate final rendered heights
     rendered_heights = []
     for element in poster.elements:
         if isinstance(element, TextLine):
-            font_size = group_font_sizes[element.size_modifier]
+            font_size = group_font_sizes[(element.size_modifier, element.font)]
             try:
-                font_name = poster.font
+                font_name = element.font
                 if not font_name.endswith('.ttf'):
                     font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size)
@@ -234,9 +211,9 @@ def render_poster(poster, output_filename):
     # Render all elements
     for i, element in enumerate(poster.elements):
         if isinstance(element, TextLine):
-            font_size = group_font_sizes[element.size_modifier]
+            font_size = group_font_sizes[(element.size_modifier, element.font)]
             try:
-                font_name = poster.font
+                font_name = element.font
                 if not font_name.endswith('.ttf'):
                     font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size)
@@ -278,7 +255,6 @@ def render_poster(poster, output_filename):
             except IOError:
                 raise IOError(f"Error: Image file not found at {element.path}. Please ensure the image exists and the path is correct.")
 
-
     image.save(output_filename)
 
 def main():
@@ -294,18 +270,28 @@ def main():
     with open(args.input_file, 'r') as f:
         lines = f.readlines()
     
-    lines = parse_directives(lines, poster)
-
-    if args.size:
-        poster.width, poster.height = map(int, args.size.split('x'))
-    if args.margin:
-        if args.margin.endswith('%'):
-            poster.margin = float(args.margin[:-1]) / 100
-        else:
-            poster.margin = int(args.margin)
-
     for line in lines:
-        element = parse_line(line)
+        line = line.strip()
+        if line.startswith('!'):
+            parts = line[1:].split()
+            command = parts[0]
+            if command == 'font':
+                poster.font = parts[1]
+            elif command == 'size':
+                poster.width, poster.height = map(int, parts[1].split('x'))
+            elif command == 'margin':
+                margin_str = parts[1]
+                if margin_str.endswith('%'):
+                    poster.margin = float(margin_str[:-1]) / 100
+                else:
+                    poster.margin = int(margin_str)
+            elif command == 'background_color':
+                poster.background_color = parts[1]
+            elif command == 'background_image':
+                poster.background_image = parts[1]
+            continue
+
+        element = parse_line(line, poster)
         if element:
             poster.elements.append(element)
 

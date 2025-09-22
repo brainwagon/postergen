@@ -1,0 +1,17 @@
+# This is a comment and should be ignored.
+!size 800x1200
+!font Arial
+
+!font TNG_Credits.ttf
+size=bigger size=bigger A Big Title
+
+!font Arial
+Line 1 is very long, and should make all other lines small
+
+alignment=left Line 2 is short
+alignment=right Line 3 is longer, but still short
+
+# Replace with the actual path to your image
+/home/markv/postergen/picard.png height=15%
+
+A concluding paragraph.
