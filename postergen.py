@@ -4,7 +4,8 @@ import glob
 import subprocess
 from PIL import Image, ImageDraw, ImageFont
 
-def list_fonts():
+def get_font_map():
+    font_map = {}
     font_paths = ['./']
     if os.name == 'posix':
         font_paths.extend([
@@ -13,17 +14,37 @@ def list_fonts():
             os.path.expanduser('~/.fonts'),
         ])
 
-    fonts = []
     for path in font_paths:
         for font_file in glob.glob(os.path.join(path, '**/*.ttf'), recursive=True):
-            fonts.append(os.path.basename(font_file))
+            try:
+                font = ImageFont.truetype(font_file)
+                font_map[font.getname()[0]] = font_file
+            except OSError:
+                pass
         for font_file in glob.glob(os.path.join(path, '**/*.otf'), recursive=True):
-            fonts.append(os.path.basename(font_file))
+            try:
+                font = ImageFont.truetype(font_file)
+                font_map[font.getname()[0]] = font_file
+            except OSError:
+                pass
         for font_file in glob.glob(os.path.join(path, '**/*.ttc'), recursive=True):
-            fonts.append(os.path.basename(font_file))
+            try:
+                # For TTC files, we need to iterate through the fonts in the collection
+                font_collection = ImageFont.truetype(font_file)
+                for i in range(100): # Try up to 100 fonts in a collection
+                    try:
+                        font = ImageFont.truetype(font_file, index=i)
+                        font_map[font.getname()[0]] = f"{font_file}:{i}"
+                    except OSError:
+                        break
+            except OSError:
+                pass
+    return font_map
 
-    for font in sorted(list(set(fonts))):
-        print(font)
+def list_fonts():
+    font_map = get_font_map()
+    for name, path in sorted(font_map.items()):
+        print(f'{name} ({os.path.basename(path)})')
 
 
 class Poster:
@@ -198,9 +219,6 @@ def render_poster(poster, output_filename):
                 if ':' in font_name:
                     font_name, font_index = font_name.split(':')
                     font_index = int(font_index)
-
-                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
-                    font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size, index=font_index)
             except OSError:
                 print(f"Warning: Font file not found at {element.font}. Using default font.")
@@ -227,9 +245,6 @@ def render_poster(poster, output_filename):
                 if ':' in font_name:
                     font_name, font_index = font_name.split(':')
                     font_index = int(font_index)
-
-                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
-                    font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size, index=font_index)
             except OSError:
                 print(f"Warning: Font file not found at {element.font}. Using default font.")
@@ -254,9 +269,6 @@ def render_poster(poster, output_filename):
                 if ':' in font_name:
                     font_name, font_index = font_name.split(':')
                     font_index = int(font_index)
-
-                if not (font_name.endswith('.ttf') or font_name.endswith('.ttc')):
-                    font_name += '.ttf'
                 font = ImageFont.truetype(font_name, size=font_size, index=font_index)
             except OSError:
                 print(f"Warning: Font file not found at {element.font}. Using default font.")
@@ -316,6 +328,7 @@ def main():
     if not args.input_file:
         parser.error('the following arguments are required: input_file')
 
+    font_map = get_font_map()
     poster = Poster()
 
     with open(args.input_file, 'r') as f:
@@ -324,10 +337,14 @@ def main():
     for line in lines:
         line = line.strip()
         if line.startswith('!'):
-            parts = line[1:].split()
+            parts = line[1:].split(' ', 1)
             command = parts[0]
             if command == 'font':
-                poster.font = parts[1]
+                font_name = parts[1]
+                if font_name in font_map:
+                    poster.font = font_map[font_name]
+                else:
+                    poster.font = font_name
             elif command == 'size':
                 poster.width, poster.height = map(int, parts[1].split('x'))
             elif command == 'margin':

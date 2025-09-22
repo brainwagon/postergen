@@ -1,7 +1,7 @@
 # This is a comment and should be ignored.
 !size 800x1200
 
-!font ukai.ttc:0
+!font Reason Shadow BRK
 size=bigger size=bigger A Big Title
 
 !font Arial
