@@ -175,7 +175,6 @@ class BlankLine:
         return f"BlankLine(height={self.height})"
 
 
-
 def parse_line(line, poster, date_format):
     line = line.strip()
     if not line:
